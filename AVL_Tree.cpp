@@ -7,57 +7,73 @@ struct Node
     Node *left, *right;
 };
 
-int getHeight(Node* node)
+void init(Node *&root)
 {
-    if (node == NULL)
+    root = NULL;
+}
+
+Node *createNode(int x)
+{
+    Node *p = new Node;
+    p->key = x;
+    p->left = p->right = NULL;
+    p->height = 1;
+    return p;
+}
+
+int getHeight(Node* root)
+{
+    if (root == NULL)
         return 0;
-    return node->height;
+    return root->height;
 }
 
-void updateHeight(Node* node)
+void updateHeight(Node* root)
 {
-    node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
+    root->height = max(getHeight(root->left), getHeight(root->right)) + 1;
 }
 
-int getBalance(Node* node)
+int getBalance(Node* root)
 {
-    if (node == NULL)
+    if (root == NULL)
         return 0;
-    return getHeight(node->left) - getHeight(node->right);
+    return getHeight(root->left) - getHeight(root->right);
 }
 
-Node* rotateRight(Node* node) {
-    Node* temp = node->left;
-    node->left = temp->right;
-    temp->right = node;
-    updateHeight(node);
+Node* rotateRight(Node* root)
+{
+    Node* temp = root->left;
+    root->left = temp->right;
+    temp->right = root;
+    updateHeight(root);
     updateHeight(temp);
     return temp;
 }
 
-Node* rotateLeft(Node* node) {
-    Node* temp = node->right;
-    node->right = temp->left;
-    temp->left = node;
-    updateHeight(node);
+Node* rotateLeft(Node* root)
+{
+    Node* temp = root->right;
+    root->right = temp->left;
+    temp->left = root;
+    updateHeight(root);
     updateHeight(temp);
     return temp;
 }
 
-Node* rebalance(Node* node)
+Node* rebalance(Node* root)
 {
-    int balanceFactor = getBalance(node);
+    int balanceFactor = getBalance(root);
     // Left heavy
     if (balanceFactor > 1)
     {
         // Left - Left
-        if (getHeight(node->left->left) >= getHeight(node->left->right))
-            node = rotateRight(node);
+        if (getHeight(root->left->left) >= getHeight(root->left->right))
+            root = rotateRight(root);
         // Left - Right
         else
         {
-            node->left = rotateLeft(node->left);
-            node = rotateRight(node);
+            root->left = rotateLeft(root->left);
+            root = rotateRight(root);
         }
     }
 
@@ -65,107 +81,103 @@ Node* rebalance(Node* node)
     else if (balanceFactor < -1)
     {
         // Right - Right
-        if (getHeight(node->right->right) >= getHeight(node->right->left))
-            node = rotateLeft(node);
+        if (getHeight(root->right->right) >= getHeight(root->right->left))
+            root = rotateLeft(root);
         // Right - Left
         else
         {
-            node->right = rotateRight(node->right);
-            node = rotateLeft(node);
+            root->right = rotateRight(root->right);
+            root = rotateLeft(root);
         }
     }
-    return node;
+    return root;
 }
 
-Node* insert(Node* node, int key)
+Node *insert(Node *&root, int key)
 {
-    if (node == NULL)
-    {
-        node = new Node();
-        node->key = key;
-        node->left = NULL;
-        node->right = NULL;
-        node->height = 1;
-    }
-    else if (key < node->key)
-        node->left = insert(node->left, key);
-    else if (key > node->key)
-        node->right = insert(node->right, key);
+    if (root == NULL)
+        root = createNode(key);
+    else if (key < root->key)
+        root->left = insert(root->left, key);
+    else if (key > root->key)
+        root->right = insert(root->right, key);
     else
-        return node;
-    updateHeight(node);
-    node = rebalance(node);
-    return node;
+        return root;
+    updateHeight(root);
+    root = rebalance(root);
+    return root;
 }
 
-Node* remove(Node* node, int key) {
-    if (node == NULL)
-        return node;
-    if (key < node->key)
-        node->left = remove(node->left, key);
-    else if (key > node->key)
-        node->right = remove(node->right, key);
+Node* remove(Node *&root, int key) {
+    if (root == NULL)
+        return root;
+    if (key < root->key)
+        root->left = remove(root->left, key);
+    else if (key > root->key)
+        root->right = remove(root->right, key);
     // Node need to removed
     else
     {
-        if (node->left == NULL)
+        if (root->left == NULL)
         {
-            Node* temp = node->right;
-            delete node;
+            Node* temp = root->right;
+            delete root;
             return temp;
         }
-        else if (node->right == NULL)
+        else if (root->right == NULL)
         {
-            Node* temp = node->left;
-            delete node;
+            Node* temp = root->left;
+            delete root;
             return temp;
         }
         // Use most left of right side
-        Node* temp = node->right;
+        Node* temp = root->right;
         while (temp->left != NULL)
             temp = temp->left;
-        node->key = temp->key;
-        node->right = remove(node->right, temp->key);
+        root->key = temp->key;
+        root->right = remove(root->right, temp->key);
     }
-    updateHeight(node);
-    node = rebalance(node);
-    return node;
+    updateHeight(root);
+    root = rebalance(root);
+    return root;
 }
 
-void LNR(Node* node)
+void LNR(Node* root)
 {
-    if (node != NULL)
+    if (root != NULL)
     {
-        LNR(node->left);
-        cout << node->key << " ";
-        LNR(node->right);
+        LNR(root->left);
+        cout << root->key << " ";
+        LNR(root->right);
     }
 }
 
-void destroyTree(Node *&node)
+void destroyTree(Node *&root)
 {
-    if (node == NULL)
+    if (root == NULL)
         return;
-    destroyTree(node->left);
-    destroyTree(node->right);
-    delete node;
-    node = NULL;
+    destroyTree(root->left);
+    destroyTree(root->right);
+    delete root;
+    root = NULL;
 }
 
 int main()
 {
-    Node* root = NULL;
-    root = insert(root, 10);
-    root = insert(root, 20);
-    root = insert(root, 30);
-    root = insert(root, 40);
-    root = insert(root, 50);
-    root = insert(root, 25);
+    Node *root;
+    init(root);
+
+    insert(root, 30);
+    insert(root, 50);
+    insert(root, 20);
+    insert(root, 31);
+    insert(root, 59);
+    insert(root, 22);
 
     LNR(root);
     cout << endl;
 
-    root = remove(root, 25);
+    remove(root, 30);
     LNR(root);
     cout << endl;
 
