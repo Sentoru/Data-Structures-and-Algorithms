@@ -1,2 +1,1 @@
-# Hash-Table
-Xây dựng bảng băm
+Building algorithms for searching and sorting in C++
